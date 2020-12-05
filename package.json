@@ -1,0 +1,33 @@
+{
+  "name": "parcel-vue-ssr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "process:js": "parcel build src/index.js --out-dir=dist/js/ --out-file=bundle.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "James Wragg <james.wragg@madgex.com> (https://madgex.com/)",
+  "license": "MIT",
+  "dependencies": {
+    "@hapi/hapi": "^20.0.3",
+    "@hapi/inert": "^6.0.3",
+    "@hapi/vision": "^6.0.1",
+    "@parcel/core": "^2.0.0-alpha.3",
+    "nanoid": "^3.1.20",
+    "nunjucks": "^3.2.2",
+    "nunjucks-await-filter": "^0.0.1",
+    "parcel-bundler": "^1.12.4",
+    "vue": "^2.6.12",
+    "vue-hot-reload-api": "^2.3.4",
+    "vue-server-renderer": "^2.6.12"
+  },
+  "devDependencies": {
+    "@madgex/eslint-config-madgex": "latest",
+    "@madgex/prettier-config-madgex": "latest",
+    "@vue/component-compiler-utils": "^3.2.0",
+    "sass": "^1.29.0",
+    "vue-template-compiler": "^2.6.12"
+  }
+}

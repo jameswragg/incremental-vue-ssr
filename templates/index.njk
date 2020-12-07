@@ -4,30 +4,45 @@
 	<meta charset="utf-8" />
 	<title></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    {# <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script> #}
+    <script src="https://unpkg.com/vue@3.0.4/dist/vue.global.prod.js"></script>
 
-    {% for id, block in csrBlocks %}
-    <!-- id -->
-    <style>
-    {{ block.css | safe }}
-    </style>
-    {% endfor %} 
 </head>
 <body>
 
     <div>
-        <h1>{{title}}</h1>
-        <p>{{message}}</p>
-        {{ renderComponent('mybutton', { title: title }) | await | safe }}
+        <h1>{{ title }}</h1>
+        <p>{{ message }}</p>
+
+        {{ renderComponent('mybutton', {
+            props: {
+                propMsg: title
+            }
+        }) | await }}
+
+        {{ renderComponent('carousel', {
+            props: {
+                items: carouselItems
+            }
+        }) | await }}
+
     </div>
 
 
-    {% for id, block in csrBlocks %}
-    <!-- id -->
-    <script type="module">
-    {{ block.js | safe }}
-    </script>
+    {% for id, obj in csrBlocks %}
+        <!-- {{id}} -->
+        <style>
+        {{ obj.css | safe }}
+        </style>
+        <script type="module">
+        {{ obj.js | safe }}
+        </script>
+        
+
     {% endfor %} 
+
+
+    {# {{ csrBlocks | dump(2) | safe }} #}
 
 </body>
 </html>

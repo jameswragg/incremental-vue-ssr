@@ -1,10 +1,18 @@
 <template>
-  <div @click="count++">Oh hai my Button {{ count }} {{ msg }}</div>
+  <button @click="count++">
+    Count:{{ count }} <br />
+    <strong v-if="msg">{{ msg }}</strong>
+  </button>
 </template>
 
 <script>
 export default {
-  props: {},
+  props: {
+    propMsg: {
+      type: String,
+      default: '',
+    },
+  },
   data() {
     return {
       count: 0,
@@ -18,10 +26,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// styles
-div {
-  background: red;
-  color: white;
-  margin: 10px;
+button {
+  padding: 10px;
+
+  strong {
+    display: inline-block;
+    padding: 4px 8px;
+    background: red;
+    color: white;
+  }
 }
 </style>

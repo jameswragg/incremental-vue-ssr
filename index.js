@@ -1,3 +1,4 @@
+/* eslint-disable import/no-dynamic-require */
 /* eslint-disable global-require */
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
@@ -5,27 +6,50 @@ const Vision = require('@hapi/vision');
 const Inert = require('@hapi/inert');
 const Nunjucks = require('nunjucks');
 const awaitFilter = require('nunjucks-await-filter');
-const Vue = require('vue');
-const renderer = require('vue-server-renderer').createRenderer();
+
 const fs = require('fs/promises');
 const { nanoid } = require('nanoid');
+const { createSSRApp } = require('vue');
+const { renderToString } = require('@vue/server-renderer');
 
 const { builder } = require('./builder');
 
 const internals = {
   templatePath: '.',
+  ssrBundlesPath: './dist/server/',
+  csrBundlesPath: './dist/client/',
 };
 
-internals.rootHandler = function (request, h) {
-  const relativePath = Path.relative(`${__dirname}/../..`, `${__dirname}/templates/${internals.templatePath}`);
+internals.renderComponent = async function renderComponent(componentName, context = {}) {
+  const componentPath = Path.resolve(internals.ssrBundlesPath, `${componentName}.js`);
+  const component = require(componentPath);
+  const css = await fs.readFile(Path.resolve(internals.ssrBundlesPath, `${componentName}.css`), 'utf8');
+  const js = await fs.readFile(Path.resolve(internals.csrBundlesPath, `${componentName}.js`), 'utf8');
+  const id = nanoid(10);
 
-  return h.view('index', {
-    title: `Running ${relativePath} | hapi ${request.server.version}`,
-    message: 'Hello Nunjucks!',
-  });
+  let result;
+
+  this.ctx.csrBlocks[componentName] = {
+    css,
+    js: `${js}
+
+    Vue.createSSRApp(${componentName}, ${JSON.stringify(context.props)}).mount('#vue-${id}', true)`,
+  };
+
+  try {
+    const vueApp = createSSRApp(component, context.props);
+    const html = await renderToString(vueApp, context.state);
+
+    result = `<div id="vue-${id}">${html}</div>`;
+  } catch (error) {
+    console.error(error);
+    result = error;
+  }
+
+  return this.env.filters.safe(result);
 };
 
-internals.main = async function () {
+internals.main = async function main() {
   const server = Hapi.Server({
     host: '0.0.0.0',
     port: 3000,
@@ -42,6 +66,9 @@ internals.main = async function () {
   await server.register(Inert);
 
   server.views({
+    defaultExtension: 'njk',
+    path: `${__dirname}/templates`,
+    isCached: false,
     engines: {
       njk: {
         compile: (src, options) => {
@@ -51,6 +78,7 @@ internals.main = async function () {
             return new Promise((resolve, reject) => {
               template.render(context, (err, res) => {
                 if (err) {
+                  console.error(err);
                   reject(err);
                 }
 
@@ -59,7 +87,6 @@ internals.main = async function () {
             });
           };
         },
-
         prepare: (options, next) => {
           options.compileOptions.environment = Nunjucks.configure(options.path, { watch: false });
 
@@ -67,42 +94,40 @@ internals.main = async function () {
 
           awaitFilter(env);
 
+          env.addGlobal('renderComponent', internals.renderComponent);
+
           return next();
         },
       },
     },
-    path: `${__dirname}/templates`,
-    isCached: false,
     context: {
       csrBlocks: {},
-      async renderComponent(path, context = {}) {
-        const component = require(`./dist/server/${path}`).default;
-        const id = nanoid(10);
-        const css = await fs.readFile(`./dist/server/${path}.css`, 'utf8');
-        // const js = await fs.readFile(`./dist/client/${path}.js`, 'utf8');
-
-        this.ctx.csrBlocks[path] = {
-          css,
-          js: `
-          import ${path} from '/public/client/${path}.js'
-        
-          new Vue({ render: createElement => createElement(${path}).default }).$mount('#vue-${id}');
-          `,
-        };
-
-        try {
-          const html = await renderer.renderToString(new Vue(component, context));
-          const result = `<div id="vue-${id}">${html}</div>`;
-
-          return result;
-        } catch (error) {
-          console.error(error);
-        }
-      },
     },
   });
 
-  server.route({ method: 'GET', path: '/', handler: internals.rootHandler });
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler: async (request, h) => {
+      // server handler does stuff
+
+      return h.view('index', {
+        title: `Running hapi ${request.server.version} with Nunjucks server-rendered templates`,
+        carouselItems: [
+          {
+            name: 'james',
+          },
+          {
+            name: 'bob',
+          },
+          {
+            name: 'sarah',
+          },
+        ],
+      });
+    },
+  });
+
   server.route({
     method: 'GET',
     path: '/public/{param*}',
@@ -115,6 +140,7 @@ internals.main = async function () {
   });
 
   await server.start();
+
   console.log(`Server is running at ${server.info.uri}`);
 };
 

@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=production node index.js",
-    "dev": "node index.js",
-    "debug": "nodemon --inspect-brk index.js",
+    "start": "NODE_ENV=production node lib/index.js",
+    "dev": "node lib/index.js",
+    "debug": "nodemon --inspect-brk lib/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

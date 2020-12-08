@@ -4,7 +4,6 @@
 	<meta charset="utf-8" />
 	<title></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    {# <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script> #}
     <script src="https://unpkg.com/vue@3.0.4/dist/vue.global.prod.js"></script>
 
 </head>
@@ -12,14 +11,18 @@
 
     <div>
         <h1>{{ title }}</h1>
-        <p>{{ message }}</p>
 
+        <p>
+            Using the custom <code>renderComponent</code> nunjucks global to:
+            SSR <code>mybutton.vue</code> with server-context + hydrate with CSR bundle on demand
+        </p>
         {{ renderComponent('mybutton', {
             props: {
-                propMsg: title
+                count: count
             }
         }) | await }}
 
+        <p>…same with <code>carousel.vue</code></p>
         {{ renderComponent('carousel', {
             props: {
                 items: carouselItems

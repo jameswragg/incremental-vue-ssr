@@ -1,6 +1,6 @@
 <template>
-  <button @click="count++">
-    Count:{{ count }} <br />
+  <button @click="internal_count++">
+    Count:{{ internal_count }} <br />
     <strong v-if="msg">{{ msg }}</strong>
   </button>
 </template>
@@ -8,14 +8,14 @@
 <script>
 export default {
   props: {
-    propMsg: {
-      type: String,
-      default: '',
+    count: {
+      type: Number,
+      default: 0,
     },
   },
   data() {
     return {
-      count: 0,
+      internal_count: this.count,
       msg: '',
     };
   },

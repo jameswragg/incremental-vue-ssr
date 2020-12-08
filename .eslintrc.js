@@ -1,3 +1,1 @@
-module.exports = {
-  extends: '@madgex/eslint-config-madgex',
-};
+module.exports = {};

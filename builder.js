@@ -57,7 +57,7 @@ const config = (name, path) => [
   },
 ];
 
-exports.builder = async () => {
+exports.builder = async (options) => {
   async function createConfig(conf) {
     try {
       const bundle = await rollup.rollup(conf);
@@ -75,8 +75,8 @@ exports.builder = async () => {
   const collection = await globby(entryFiles);
   const promises = [];
 
-  await mkdirp('./dist/server');
-  await mkdirp('./dist/client');
+  await mkdirp(options.ssrBundlespath);
+  await mkdirp(options.csrBundlespath);
 
   console.log(`Building SFCs...`);
 
